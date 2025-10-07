@@ -1,0 +1,18 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+psycopg2-binary
+SQLAlchemy
+alembic
+pydantic[email]
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+requests
+sentence-transformers
+scikit-learn
+spacy
+pypdf                # <-- add (PDF text)
+python-docx    
+torch
+
