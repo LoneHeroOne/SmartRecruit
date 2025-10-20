@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import api from "../Services/apiClient";
-import BackgroundAnimation from "../components/common/BackgroundAnimation";
 import "./ApplicationForm.css";
 
 interface ApplicationData {
@@ -16,6 +15,17 @@ interface ApplicationData {
   cover_letter: string;
 }
 
+interface Job {
+  id: number;
+  title: string;
+  description: string;
+  location?: string;
+  duration?: string;
+  requirements?: string[];
+  deadline?: string;
+  contract_type?: string;
+}
+
 const steps = [
   { id: 1, title: "Personal Information", progress: 25 },
   { id: 2, title: "Education & Experience", progress: 50 },
@@ -23,12 +33,19 @@ const steps = [
   { id: 4, title: "Review & Submit", progress: 100 },
 ];
 
+type CurrentCV = { id: number; file_path: string; uploaded_at: string } | null;
+
 export default function ApplicationForm() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cvFile, setCVFile] = useState<File | null>(null);
+  const [currentCv, setCurrentCv] = useState<CurrentCV>(null);
+  const [job, setJob] = useState<Job | null>(null);
+  const [jobLoading, setJobLoading] = useState(true);
+  const [jobError, setJobError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   const [formData, setFormData] = useState<ApplicationData>({
     job_id: Number(jobId) || 0,
@@ -49,7 +66,46 @@ export default function ApplicationForm() {
       navigate("/", { state: { message: "Please log in to apply." } });
       return;
     }
-  }, [navigate]);
+
+    // Fetch job details
+    const fetchJob = async () => {
+      try {
+        const response = await api.get(`/jobs/${jobId}`);
+        setJob(response.data);
+      } catch (err) {
+        setJobError("Failed to load job details.");
+      } finally {
+        setJobLoading(false);
+      }
+    };
+
+    // Fetch current CV
+    const fetchCurrentCv = async () => {
+      try {
+        const response = await api.get(`/cvs/current`);
+        setCurrentCv(response.data);
+      } catch (err) {
+        // CV not uploaded yet, that's ok
+        setCurrentCv(null);
+      }
+    };
+
+    if (jobId) fetchJob();
+    fetchCurrentCv();
+  }, [navigate, jobId]);
+
+  const onReplaceCv = async (file: File) => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      await api.post("/cvs", fd);
+      // Refresh current CV after upload
+      const curRes = await api.get("/cvs/current");
+      setCurrentCv(curRes.data);
+    } catch (err) {
+      alert("Failed to upload CV. Please try again.");
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -58,32 +114,29 @@ export default function ApplicationForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
-    setCVFile(file);
-  };
+
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setSubmitError("");
     try {
-      // Note: CV upload is optional in this form
-      // If you want to add CV upload, modify the body accordingly
       const formPayload = {
         ...formData,
         years_experience: Number(formData.years_experience),
       };
 
-      const response = await api.post("/applications/apply", formPayload);
+      await api.post("/applications", formPayload);
 
-      // Success: Show confirmation and navigate to internships list
-      alert("Your application has been submitted successfully! We'll be in touch soon.");
-      navigate("/internships");
+      setSubmitted(true);
     } catch (error: any) {
       console.error("Application submission failed:", error);
-      alert("Application submission failed. Please try again.");
+      const errorMsg = error.response?.status === 400
+        ? error.response.data.detail || "Duplicate information found. Please verify your details."
+        : "An error occurred. Please try again.";
+      setSubmitError(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -230,18 +283,24 @@ export default function ApplicationForm() {
                 className="form-textarea"
               />
             </div>
-            <div className="form-group">
-              <label htmlFor="cv_file" className="form-label">
-                CV/Resume Upload (Optional)
+            <div className="card glass" style={{ padding: 16, marginTop: 16 }}>
+              <h4 style={{ marginTop: 0 }}>Votre CV</h4>
+              {currentCv ? (
+                <div>
+                  CV enregistré: {currentCv.file_path.split("/").pop()}
+                </div>
+              ) : (
+                <div style={{ color: "#f66" }}>Aucun CV enregistré</div>
+              )}
+              <label style={{ display: "inline-block", marginTop: 8, cursor: "pointer", background: "#f0f0f0", padding: "8px 12px", borderRadius: 4 }}>
+                Remplacer le CV
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  style={{ display: "none" }}
+                  onChange={(e) => e.target.files?.[0] && onReplaceCv(e.target.files[0])}
+                />
               </label>
-              <input
-                type="file"
-                id="cv_file"
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.txt"
-                className="form-input"
-              />
-              {cvFile && <p className="file-selected">Selected: {cvFile.name}</p>}
             </div>
           </div>
         );
@@ -268,7 +327,7 @@ export default function ApplicationForm() {
             <div className="review-section">
               <h3>Cover Letter</h3>
               <p className="cover-letter-preview">{formData.cover_letter}</p>
-              {cvFile && <p><strong>CV File:</strong> {cvFile.name}</p>}
+              {currentCv && <p><strong>CV:</strong> {currentCv.file_path.split("/").pop()}</p>}
             </div>
           </div>
         );
@@ -280,10 +339,58 @@ export default function ApplicationForm() {
 
   const currentProgress = steps.find((step) => step.id === currentStep)?.progress || 0;
 
+  if (jobLoading) return (
+    <div className="application-form-container">
+      <div className="application-card">
+        <div className="loading">Loading job details...</div>
+      </div>
+    </div>
+  );
+
+  if (jobError) return (
+    <div className="application-form-container">
+      <div className="application-card">
+        <div className="error-message">{jobError}</div>
+        <Link to="/jobs" className="apply-button">Back to Jobs</Link>
+      </div>
+    </div>
+  );
+
+  if (submitted) return (
+    <div className="application-form-container">
+      <div className="application-card success-message">
+        <h2>Application Submitted Successfully!</h2>
+        <p>Your application has been received. We'll be in touch soon.</p>
+        <div className="nav-options">
+          <Link to="/jobs" className="apply-button">View More Jobs</Link>
+          <Link to="/" className="apply-button secondary">Home</Link>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (submitError) return (
+    <div className="application-form-container">
+      <div className="application-card error-card">
+        <h2>Submission Error</h2>
+        <p>{submitError}</p>
+        <button onClick={() => setSubmitError("")} className="apply-button">Try Again</button>
+        <br />
+        <Link to="/jobs" className="apply-button secondary">Back to Jobs</Link>
+      </div>
+    </div>
+  );
+
   return (
     <div className="application-form-container">
-      <BackgroundAnimation />
       <div className="application-card">
+        {job && (
+          <div className="job-header">
+            <h2 className="job-title">{job.title}</h2>
+            <p className="job-description">{job.description}</p>
+          </div>
+        )}
+
         <div className="progress-section">
           <div className="progress-steps">
             {steps.map((step, index) => (

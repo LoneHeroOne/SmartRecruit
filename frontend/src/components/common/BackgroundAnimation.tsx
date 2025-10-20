@@ -1,11 +1,9 @@
-// src/components/common/LottieBackground.tsx
 import { useEffect, useRef } from "react";
 import lottie, { type AnimationItem } from "lottie-web";
+// import bgAnim from "../../assets/animations/background.json"; // <-- put your file here
 import "./BackgroundAnimation.css";
 
 type BackgroundAnimationProps = {
-  /** Path to the Lottie JSON. Defaults to /animations/bg.json */
-  src?: string;
   /** Optional: slow down animation (1 = normal). Defaults to 1. */
   speed?: number;
   /** Optional: extra class for custom theming */
@@ -13,7 +11,6 @@ type BackgroundAnimationProps = {
 };
 
 export default function BackgroundAnimation({
-  src = "/animations/bg.json",
   speed = 1,
   className = "",
 }: BackgroundAnimationProps) {
@@ -33,13 +30,17 @@ export default function BackgroundAnimation({
         renderer: "svg",
         loop: true,
         autoplay: !prefersReduced,
-        path: src, // served from public/
+        animationData: null, // Replace with imported JSON when available
         rendererSettings: {
           preserveAspectRatio: "xMidYMid slice",
           progressiveLoad: true,
           hideOnTransparent: true,
         },
       });
+
+      // Handle reduced motion
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      if (mq.matches) anim.setSpeed(0.5);
 
       anim.setSpeed(Math.max(0.1, speed));
 
@@ -63,7 +64,7 @@ export default function BackgroundAnimation({
         anim?.destroy();
       };
     }
-  }, [src, speed]);
+  }, [speed]);
 
-  return <div className={`lottie-bg ${className}`} aria-hidden="true" ref={containerRef} />;
+  return <div className={`bg-anim ${className}`} aria-hidden="true" ref={containerRef} />;
 }

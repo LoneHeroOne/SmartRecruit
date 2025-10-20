@@ -284,3 +284,69 @@
   outline: 2px solid #0b5aaa;
   outline-offset: 0;
 }
+
+/* Job header */
+.job-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.job-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #0b5aaa;
+  text-align: center;
+}
+
+.job-description {
+  color: #4b5563;
+  line-height: 1.5;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+/* Status screens */
+.success-message,
+.error-card {
+  text-align: center;
+}
+
+.success-message h2 {
+  color: #059669;
+  margin-bottom: 1rem;
+}
+
+.error-card h2 {
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+.error-card p {
+  color: #dc2626;
+}
+
+.nav-options {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.apply-button.secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.apply-button.secondary:hover {
+  background-color: #4b5563;
+}
+
+/* Loading and error states */
+.loading,
+.error-message {
+  text-align: center;
+  font-size: 1.125rem;
+  color: #4b5563;
+}

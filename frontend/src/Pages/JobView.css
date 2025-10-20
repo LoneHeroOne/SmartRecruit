@@ -1,0 +1,50 @@
+.jobsTheme .jobView { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+/* Hero */
+.jobsTheme .jobHero { display: grid; grid-template-columns: 72px 1fr; gap: 16px; align-items: center; background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 16px; }
+.jobsTheme .jobHero__brand img, .jobsTheme .logoPH { width: 72px; height: 72px; border-radius: 12px; object-fit: cover; background:#f5f7fb; border:1px solid #e8ecf3; }
+.jobsTheme .jobTitle { margin: 0 0 6px 0; font-size: 1.3rem; }
+.jobsTheme .jobCompany { color:#5b667a; margin-bottom: 8px; }
+.jobsTheme .jobMetaRow { display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 10px; }
+.jobsTheme .jobMetaChip { background:#f4f6fa; border:1px solid #e6ebf3; border-radius:999px; padding:6px 10px; font-size:.85rem; }
+.jobsTheme .jobActions { display:flex; gap:10px; flex-wrap:wrap; }
+.jobsTheme .btn { appearance:none; cursor:pointer; font-weight:600; border-radius:10px; padding:10px 14px; border:1px solid transparent; }
+.jobsTheme .btn--solid { background:#1e63e9; color:#fff; border-color:#1e63e9; }
+.jobsTheme .btn--outline { background:#fff; color:#1e63e9; border-color:#cfe0ff; }
+
+/* Facts */
+.jobsTheme .factsRow { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
+@media (min-width: 720px){ .jobsTheme .factsRow { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+.jobsTheme .factCell { background:#f7f9fc; border:1px solid #eef1f6; border-radius:10px; padding:10px; }
+.jobsTheme .factLabel { font-size:.78rem; color:#6b768a; margin-bottom:4px; }
+.jobsTheme .factValue { font-weight:600; color:#0c1730; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* Content grid */
+.jobsTheme .contentGrid { display:grid; grid-template-columns:1fr; gap:16px; }
+@media (min-width: 980px){ .jobsTheme .contentGrid { grid-template-columns: 2fr 1fr; } }
+.jobsTheme .card { background:#fff; border:1px solid #eee; border-radius:14px; padding:16px; }
+.jobsTheme .bulletList { margin:0; padding-left:18px; }
+.jobsTheme .pillList { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; margin:0; }
+.jobsTheme .pill { padding:6px 10px; border-radius:999px; font-size:.86rem; background:#e8f0ff; border:1px solid #cfe0ff; }
+.jobsTheme .pill--more { background:#eef2f7; border-color:#e2e7ef; color:#0b1220; }
+.jobsTheme .posted { font-size:.9rem; color:#6b768a; margin-top:8px; }
+
+/* Helpers */
+.jobsTheme .loading, .jobsTheme .error { background:#fff; border:1px solid #eee; border-radius:10px; padding:16px; }
+
+/* JobView local buttons (scoped to jobsTheme to avoid base.css conflicts) */
+.jobsTheme .jdBtn {
+  appearance:none; border-radius:6px; border:1px solid transparent;
+  font-size:14px; font-weight:600; cursor:pointer; padding:12px 24px;
+}
+.jobsTheme .jdBtn--primary {
+  background:var(--primary); color:#fff; border-color:var(--primary);
+  transition:background-color .2s ease;
+}
+.jobsTheme .jdBtn--primary:hover { background:#1E3A8A; }
+.jobsTheme .jdBtn--secondary {
+  background:#fff; color:var(--primary); border:1px solid var(--primary);
+}
+.jobsTheme .jdBtn--tertiary {
+  background:#fff; color:var(--ink-500); border:1px solid var(--border);
+}

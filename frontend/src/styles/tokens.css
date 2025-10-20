@@ -1,0 +1,37 @@
+:root {
+  /* Surfaces */
+  --card-bg: rgba(15,18,28,0.65);
+  --card-bg-strong: rgba(15,18,28,0.8);
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.16);
+  --text: rgba(1, 1, 1, 0.96);
+  --text-dim: rgba(255,255,255,0.80);
+
+  /* Accent */
+  --accent: #00B5FF;
+  --accent-2: #7A5CF5;
+  --accent-3: #2ED2C9;
+
+  /* Status */
+  --st-yellow: #f2c744;
+  --st-yellow-bg: rgba(242,199,68,0.18);
+  --st-yellow-br: rgba(242,199,68,0.35);
+  --st-green: #1db954;
+  --st-green-bg: rgba(29,185,84,0.18);
+  --st-green-br: rgba(29,185,84,0.35);
+  --st-red: #ff4d4f;
+  --st-red-bg: rgba(255,77,79,0.18);
+  --st-red-br: rgba(255,77,79,0.35);
+
+  /* Spacing / Radius */
+  --r: 12px;
+  --s-1: 6px;
+  --s-2: 10px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+
+  /* Layout */
+  --container: 1280px;
+}

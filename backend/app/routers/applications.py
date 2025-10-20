@@ -1,192 +1,113 @@
-# app/routers/applications.py
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
+# import relative
+from ..deps import get_db, get_current_user
+from .. import models, schemas
+from datetime import datetime, timezone
+from ..services.email_service import send_email, tpl_submission, tpl_decision
 
-from app.database import get_db
-from app.deps import get_current_user, require_admin
-from app import models, schemas
-from app.crud import get_job, create_application, list_all_applications, get_application, update_application_status_db
-from app.Services.email_service import send_status_email
+router = APIRouter(prefix="/applications", tags=["applications"])
 
-router = APIRouter()
+@router.post("", response_model=schemas.ApplicationOut)
+def create_application(payload: schemas.ApplicationCreate,
+                       background: BackgroundTasks,
+                       db: Session = Depends(get_db),
+                       user=Depends(get_current_user)):
+    # Only candidates apply (admins optional)
+    if not (getattr(user, "account_type", None) == "candidate" or getattr(user, "is_admin", False)):
+        raise HTTPException(403, "Only candidates can apply")
 
-@router.post("/apply", response_model=None)
-def apply_to_job(
-    body: schemas.ApplicationCreate,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
-):
-    job = get_job(db, job_id=body.job_id)
-    if not job:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Job not found")
+    job = db.query(models.Job).get(payload.job_id)
+    if not job or job.status != "published":
+        raise HTTPException(404, "Job not found or not open")
 
-    # Combine first_name and last_name into full_name for storage
-    full_name = f"{body.first_name} {body.last_name}".strip()
+    # Require a CV to exist (simple policy)
+    if payload.cv_id is None:
+        raise HTTPException(400, "Please provide cv_id")
 
-    # Check if phone number already used for this job
-    existing_app_phone = db.query(models.Application).filter(
-        models.Application.job_id == body.job_id,
-        models.Application.phone_number == body.phone_number
-    ).first()
-    if existing_app_phone:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An application with this phone number already exists for this job."
-        )
+    app = models.Application(
+        user_id=user.id,
+        job_id=payload.job_id,
+        cover_letter=payload.cover_letter,
+        cv_id=payload.cv_id,
+        status="pending",
+        applied_at=datetime.now(timezone.utc)
+    )
+    db.add(app)
+    db.commit()
+    db.refresh(app)
 
-    # Check if LinkedIn URL already used for this job (if provided)
-    if body.linkedin_url and db.query(models.Application).filter(
-        models.Application.job_id == body.job_id,
-        models.Application.linkedin_url == body.linkedin_url
-    ).first():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An application with this LinkedIn URL already exists for this job."
-        )
-
-    # Create application without any matching logic
+    # send submission email (background)
     try:
-        app_row = create_application(
-            db=db,
-            user_id=current_user.id,
-            job_id=body.job_id,
-            full_name=full_name,
-            phone_number=body.phone_number,
-            education_level=body.education_level,
-            years_experience=body.years_experience,
-            linkedin_url=body.linkedin_url,
-            cover_letter=body.cover_letter,
-            score=None  # No auto-matching
+        subj, html, txt = tpl_submission(user.email, job.title)
+        background.add_task(send_email, user.email, subj, html, txt)
+    except Exception as e:
+        print("[EMAIL][submission] enqueue failed:", e)
+
+    return app
+
+@router.get("/me", response_model=list[schemas.MyApplicationRead])
+def my_applications(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    rows = (
+        db.query(
+            models.Application.id,
+            models.Application.job_id,
+            models.Application.status,
+            models.Application.score,
+            models.Application.applied_at,
+            models.Job.title.label("job_title"),
         )
-    except IntegrityError:
-        # Handle unique constraint violation (user already applied for this job)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You already applied for this job."
-        )
-
-    return {
-        "message": "Application received and under review",
-        "application_id": app_row.id,
-        "status": "submitted"
-    }
-
-@router.get("/", response_model=list[schemas.ApplicationAdminRead])
-def list_applications(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_admin),
-):
-    apps = list_all_applications(db)
-    result = []
-    for app in apps:
-        admin_read = schemas.ApplicationAdminRead(
-            id=app.id,
-            score=app.score,
-            applied_at=app.applied_at,
-            status=app.status,
-            full_name=app.full_name,
-            phone_number=app.phone_number,
-            education_level=app.education_level,
-            years_experience=app.years_experience,
-            linkedin_url=app.linkedin_url,
-            cover_letter=app.cover_letter,
-            job_title=app.job.title if app.job else None,
-            user_email=app.user.email if app.user else None,
-        )
-        result.append(admin_read)
-    return result
-
-@router.get("/test")
-def test_endpoint():
-    return {"message": "Applications router working"}
-
-@router.get("/debug/{application_id}")
-def debug_application(
-    application_id: int,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_admin),
-):
-    """Debug endpoint to check application existence and details"""
-    print(f"Debugging application {application_id}")
-    app = get_application(db, application_id=application_id)
-    if not app:
-        print("Application not found")
-        return {"error": "Application not found"}
-
-    result = {
-        "id": app.id,
-        "user_id": app.user_id,
-        "job_id": app.job_id,
-        "status": app.status,
-        "has_user": app.user is not None,
-        "user_email": app.user.email if app.user else None,
-        "full_name": app.full_name
-    }
-    print(f"Debug result: {result}")
-    return result
+        .join(models.Job, models.Job.id == models.Application.job_id)
+        .filter(models.Application.user_id == user.id)
+        .order_by(models.Application.applied_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": r.id,
+            "job_id": r.job_id,
+            "job_title": r.job_title,
+            "status": r.status,
+            "score": r.score,
+            "applied_at": r.applied_at,
+        }
+        for r in rows
+    ]
 
 @router.patch("/{application_id}/status")
-async def update_application_status_endpoint(
-    application_id: int,
-    body: schemas.ApplicationStatusUpdate,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_admin),
-):
-    """Synchronous version with email - FastAPI should handle async calls in sync endpoint via await"""
-    print(f"Starting status update for application {application_id}")
-    app = get_application(db, application_id=application_id)
+def update_application_status(application_id: int, payload: dict,
+                              background: BackgroundTasks,
+                              db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """
+    Body: { "status": "accepted" | "rejected" }
+    Only job owner or admin can change status. Sends decision email.
+    """
+    new_status = (payload or {}).get("status")
+    if new_status not in {"accepted", "rejected"}:
+        raise HTTPException(400, "Invalid status")
+
+    app = db.query(models.Application).get(application_id)
     if not app:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+        raise HTTPException(404, "Application not found")
 
-    print(f"Found application, user email: {app.user.email if app.user else 'NO USER'}")
+    job = db.query(models.Job).get(app.job_id)
+    if not job:
+        raise HTTPException(404, "Job not found")
 
-    updated_app = update_application_status_db(db, application=app, status=body.status)
+    if not (getattr(user, "is_admin", False) or job.owner_user_id == user.id):
+        raise HTTPException(403, "Not allowed")
 
+    app.status = new_status
+    db.commit()
+    db.refresh(app)
+
+    # email candidate (background)
     try:
-        if app.user and app.user.email:
-            await send_status_email(
-                recipient=app.user.email,
-                status=body.status,
-                full_name=app.full_name
-            )
-        else:
-            print("No user email found for sending status email")
+        candidate = db.query(models.User).get(app.user_id)
+        if candidate and candidate.email:
+            subj, html, txt = tpl_decision(candidate.email, job.title, new_status)
+            background.add_task(send_email, candidate.email, subj, html, txt)
     except Exception as e:
-        print(f"Failed to send status email: {e}")
+        print("[EMAIL][decision] enqueue failed:", e)
 
-    return {
-        "message": "Application status updated successfully",
-        "application": {
-            "id": updated_app.id,
-            "status": updated_app.status,
-        }
-    }
-
-@router.patch("/{application_id}/simple-status")
-def update_application_status_simple(
-    application_id: int,
-    body: schemas.ApplicationStatusUpdate,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_admin),
-):
-    """Simple synchronous version without email for testing"""
-    print(f"Simple update for application {application_id}")
-    app = get_application(db, application_id=application_id)
-    if not app:
-        print("Application not found")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
-
-    print(f"Found application: {app.full_name}, status: {app.status}")
-    print(f"Updating status from {app.status} to {body.status}")
-
-    updated_app = update_application_status_db(db, application=app, status=body.status)
-
-    print("Status updated successfully")
-    return {
-        "message": "Status updated (no email)",
-        "application": {
-            "id": updated_app.id,
-            "status": updated_app.status,
-        }
-    }
+    return {"id": app.id, "status": app.status}

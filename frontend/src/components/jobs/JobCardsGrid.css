@@ -1,0 +1,25 @@
+.jobsTheme .jobsPageContainer {
+  max-width: var(--jobs-container);
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Centered fixed columns */
+.jobsTheme .jobGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--jobs-card-width), var(--jobs-card-width)));
+  justify-content: center;
+  gap: var(--jobs-gap);
+}
+
+/* Make sure your card matches the track width and doesn’t stretch */
+.jobsTheme .jobCard {
+  width: var(--jobs-card-width);
+  max-width: 100%;
+}
+
+/* Mobile single column */
+@media (max-width: 640px){
+  .jobsTheme .jobGrid { grid-template-columns: 1fr; }
+  .jobsTheme .jobCard { width: 100%; }
+}

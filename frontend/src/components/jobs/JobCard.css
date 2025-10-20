@@ -1,0 +1,110 @@
+.jobsTheme .jobCard{
+  position:relative; display:flex; flex-direction:column; gap:var(--space-3);
+  background:var(--color-card); border:1px solid var(--color-border);
+  border-radius:10px; box-shadow:var(--shadow-1); padding:var(--space-4);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.jobsTheme .jobCard:hover{ transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,0,0,.08); border-color:#dde3ee; }
+.jobsTheme .jobCard__overlay{ position:absolute; inset:0; border-radius:inherit; z-index:1; }
+.jobsTheme .jobCard__header{ position:relative; z-index:2; display:flex; gap:var(--space-3); align-items:center; }
+.jobsTheme .jobCard__logo{ width:60px; height:60px; border-radius:12px; border:1px solid var(--color-border); background:#f5f7fb; object-fit:cover; }
+.jobsTheme .jobCard__headText{ min-width:0; }
+.jobsTheme .jobCard__title{ margin:0; font-size:18px; line-height:1.25; color:var(--color-ink); }
+.jobsTheme .jobCard__company{ color:var(--color-ink-muted); font-size:.95rem; }
+
+.jobsTheme .jobCard__facts{
+  display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px;
+}
+@media (min-width:640px){ .jobsTheme .jobCard__facts{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.jobsTheme .chip{
+  background:#f7f9fc; border:1px solid var(--color-border); border-radius:12px; padding:10px;
+  display:flex; justify-content:space-between; gap:10px; flex-direction: column;
+}
+.jobsTheme .chip span{ color:#6b768a; font-size:.82rem; }
+.jobsTheme .chip strong{ color:var(--color-ink); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.jobsTheme .skillPills{ display:flex; flex-wrap:wrap; gap:8px; list-style:none; margin:0; padding:0; }
+.jobsTheme .pill{ padding:6px 10px; border-radius:var(--radius-pill); background:#e8f0ff; border:1px solid #cfe0ff; color:var(--color-ink); font-size:.86rem; }
+.jobsTheme .pill--more{ background:#eef2f7; border-color:#e2e7ef; }
+
+.jobsTheme .jobCard__dates{ display:flex;justify-content: space-evenly; gap:16px; color:#6b768a; font-size:.9rem; }
+.jobsTheme .muted{ color:#6b768a; }
+
+.jobsTheme .jobCard__actions{ position:relative; z-index:2; display:flex; justify-content: center; gap:10px; }
+.jobsTheme .btn{ appearance:none; border-radius:12px; font-weight:700; padding:10px 14px; cursor:pointer; border:1px solid transparent; }
+.jobsTheme .btn--primary{ background:var(--color-primary); color:var(--color-primary-ink); border-color:var(--color-primary); }
+.jobsTheme .btn--ghost{ background:#fff; color:var(--color-primary); border:1px solid #cfe0ff; }
+.jobsTheme .btn:focus{ outline:2px solid #aac6ff; outline-offset:2px; }
+
+/* JobCard local buttons (avoid global .btn) */
+.jobsTheme .jlBtn {
+  appearance:none; border-radius:6px; border:1px solid transparent;
+  font-size:13px; font-weight:600; cursor:pointer; padding:10px 45px;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.jobsTheme .jlBtn--teal {
+  background:  #fff; color: #1E3A8A; border-color: var(--primary-dark-blue);
+  transition: background-color .2s ease;
+}
+.jobsTheme .jlBtn--teal:hover { background: #c2c2c2e0;color: #1E3A8A; }
+.jobsTheme .jlBtn--blue {
+  background: var(--primary-blue); color: #fff; border-color: var(--primary-blue);
+  transition: background-color .2s ease;
+}
+.jobsTheme .jlBtn--blue:hover { background: #1E3A8A; }
+
+/* Skills (if your card didn’t define them already) */
+.jobsTheme .jlSkills { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; padding:0; list-style:none; }
+.jobsTheme .jlSkill {
+  padding:6px 12px; border-radius:8px; background:#98bef074; color:var(--primary-blue);
+  border:1px solid var(--badge-border); font-size:13px; font-weight:500;
+}
+.jobsTheme .jlSkill--more { background: var(--bg-100); color: var(--ink-900); border:1px solid var(--border); }
+
+/* Base card remains yours; this block enforces the TuniJobs content layout */
+.jobsTheme .jobCard--tj{
+  display:flex; flex-direction:column; min-height:380px;
+  padding:24px; background:#fff; border:1px solid var(--border);
+  border-radius:8px; box-shadow:var(--shadow-card);
+  transition:transform .3s ease, box-shadow .3s ease;
+}
+.jobsTheme .jobCard--tj:hover{ transform:translateY(-4px); box-shadow:var(--shadow-card-hover); }
+
+.jobsTheme .jobCard__header{ display:flex; gap:16px; margin-bottom:16px; }
+.jobsTheme .jobCard__logoWrap{ width:56px; height:56px; border-radius:8px; background:var(--bg-100); border:1px solid var(--border); overflow:hidden; }
+.jobsTheme .jobCard__logo{ width:25%; height:100%; object-fit:cover; }
+.jobsTheme .jobCard__title{ margin:0 0 4px 0; font-size:18px; font-weight:700; color:var(--ink-900); line-height:1.4; }
+.jobsTheme .jobCard__company{ font-size:14px; color:var(--ink-500); }
+
+/* facts like TuniJobs: 2 columns, soft background, compact */
+.jobsTheme .jobCard__facts--tj{ 
+  display:grid; grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:16px; margin:16px 0;
+}
+.jobsTheme .factItem{ background:#F9FAFB; border-radius:6px; padding:12px; }
+.jobsTheme .factLabel{ font-size:12px; color:var(--ink-500); margin-bottom:4px; }
+.jobsTheme .factValue{ font-size:14px; font-weight:600; color:var(--ink-900); }
+
+/* "Compétences" title */
+.jobsTheme .jobCard__sectionTitle{ font-size:14px; font-weight:700; color:var(--ink-900); margin-top:0; }
+
+/* footer: dates + buttons, with thin top border */
+.jobsTheme .jobCard__footer{ margin-top:auto; }
+.jobsTheme .jobCard__dates--tj{
+  display:flex; gap:16px; font-size:12px; color:var(--ink-400);
+  padding-top:16px; border-top:1px solid var(--border); margin-bottom:16px;
+}
+.jobsTheme .jobCard__actions--tj{ display:flex; gap:8px; }
+
+/* outline buttons like TuniJobs */
+.jobsTheme .jlBtn--outlineTeal{ color:var(--primary-teal); border-color:var(--primary-teal); }
+.jobsTheme .jlBtn--outlineTeal:hover{ background:#E6FFFA; }
+
+.jobsTheme .jlBtn--outlineBlue{ color:var(--primary-blue); border-color:var(--primary-blue); }
+.jobsTheme .jlBtn--outlineBlue:hover{ background:#EEF2FF; }
+
+/* keep card width from grid */
+.jobsTheme .jobCard{ width:var(--jobs-card-width); max-width:100%; }
+@media (max-width:640px){
+  .jobsTheme .jobCard{ width:100%; }
+}

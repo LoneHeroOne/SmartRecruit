@@ -1,8 +1,8 @@
-"""add_unique_constraint_user_job_applications
+"""merge heads REV_A and REV_B
 
-Revision ID: 47fa30d14db0
-Revises: abd9bc51d2e9
-Create Date: 2025-10-05 14:25:49.496276
+Revision ID: 7f2180804bd8
+Revises: 03eb0c5a16bf, add_cover_letter_to_applications
+Create Date: 2025-10-15 12:57:42.565789
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '47fa30d14db0'
-down_revision: Union[str, Sequence[str], None] = 'abd9bc51d2e9'
+revision: str = '7f2180804bd8'
+down_revision: Union[str, Sequence[str], None] = ('03eb0c5a16bf', 'add_cover_letter_to_applications')
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

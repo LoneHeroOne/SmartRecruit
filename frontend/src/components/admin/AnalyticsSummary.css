@@ -1,0 +1,58 @@
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.card {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.kpiLabel { font-size: 12px; opacity: 0.8; margin-bottom: 6px; }
+.kpiValue { font-size: 26px; font-weight: 700; line-height: 1.1; }
+.chartBox { height: 320px; width: 100%; position: relative; }
+.gridTwo {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* base pill already exists */
+.pill--under_review {
+  background: rgba(242, 199, 68, 0.18);
+  border-color: rgba(242, 199, 68, 0.35);
+  color: #f2c744;
+}
+.pill--accepted {
+  background: rgba(29, 185, 84, 0.18);
+  border-color: rgba(29, 185, 84, 0.35);
+  color: #1db954;
+}
+.pill--rejected {
+  background: rgba(255, 77, 79, 0.18);
+  border-color: rgba(255, 77, 79, 0.35);
+  color: #ff4d4f;
+}
+/* optional neutral */
+.pill--pending {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.85);
+}

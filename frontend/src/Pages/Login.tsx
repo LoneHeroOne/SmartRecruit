@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import BackgroundAnimation from "../components/common/BackgroundAnimation";
-import {login} from "../Services/authService";
+import {login, getMe} from "../Services/authService";
 import "./Login.css";
 
 export default function Login() {
@@ -30,7 +30,20 @@ export default function Login() {
     try {
       const res = await login(form);
       localStorage.setItem("token", res.data.access_token);
-      navigate("/internships"); // redirect after login
+
+      // Cache /users/me for navbar, navigate accordingly
+      try {
+        const meRes = await getMe();
+        localStorage.setItem("me", JSON.stringify(meRes.data));
+        if (meRes.data.is_admin) {
+          navigate("/admin/applications", { replace: true });
+        } else {
+          navigate("/jobs", { replace: true });
+        }
+      } catch {
+        // fallback if /users/me fails
+        navigate("/jobs", { replace: true });
+      }
     } catch (err) {
       setError("Invalid email or password");
     } finally {
@@ -80,6 +93,7 @@ export default function Login() {
             <input
               type="password"
               name="password"
+              autoComplete="current-password"
               value={form.password}
               onChange={handleChange}
               required

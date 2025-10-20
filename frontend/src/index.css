@@ -1,10 +1,16 @@
+/* === CSS CASCADE LAYERS ORDER === */
+@layer reset, legacy, theme, utilities;
+
+/* === GLOBAL (KEEP) === */
+/* Core CSS variables, resets, typography, and base elements */
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: rgba(0, 0, 0, 0.87);
   background-color: #242424;
 
   font-synthesis: none;
@@ -62,3 +68,36 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+
+/* Moved ADMIN styles to frontend/src/Pages/AdminApplications.css */
+/* Moved JOBS styles to frontend/src/Pages/Jobs.css and frontend/src/components/jobs/JobCard.css */
+
+/* === GLOBAL (SHARED) === */
+/* Utility classes used across multiple components */
+
+.btn-primary {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(11,90,170,0.6);
+  background: linear-gradient(180deg, rgba(11,90,170,0.9), rgba(11,90,170,0.7));
+  color: #fff;
+  font-weight: 600;
+}
+.btn-primary:hover { filter: brightness(1.02); }
+
+.link {
+  font-size: 13px;
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px dashed rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.05);
+}
+.chip.muted { opacity: 0.65; }

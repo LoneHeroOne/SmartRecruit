@@ -4,6 +4,7 @@ from datetime import timedelta
 from app import models, schemas
 from app.database import get_db
 from app.utils.security import hash_password, verify_password, create_access_token
+from app.deps import rate_limit
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-@router.post("/login")
+@router.post("/login", dependencies=[Depends(rate_limit(limit=10, window_sec=60, key_prefix="login"))])
 def login(form_data: schemas.UserCreate, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == form_data.email).first()
     if not user or not verify_password(form_data.password, user.hashed_password):

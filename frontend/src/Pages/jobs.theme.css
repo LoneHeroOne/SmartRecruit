@@ -1,0 +1,45 @@
+.jobsTheme {
+  /* colors/tokens local to Jobs area */
+  --primary-teal: #0D9488;
+  --primary-teal-dark: #0F766E;
+  --primary-blue: #1E40AF;
+
+  --ink-900: #1F2937;
+  --ink-700: #374151;
+  --ink-500: #6B7280;
+  --ink-400: #9CA3AF;
+
+  --bg-50: #F9FAFB;
+  --bg-100: #F3F4F6;
+  --white: #FFFFFF;
+  --border: #E5E7EB;
+  --badge-border: #BFDBFE;
+
+  /* spacing + radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* grid knobs (centered fixed columns) */
+  --jobs-card-width: 384px;   /* bigger, TuniJobs-like */
+  --jobs-gap: 28px;           /* desktop gap */
+  --jobs-container: 1400px;   /* overall container */
+
+  /* compatibility aliases for existing job CSS if needed */
+  --color-border: var(--border);
+  --color-card: var(--white);
+  --shadow-card: 0 1px 3px rgba(0,0,0,.10);
+  --shadow-card-hover: 0 10px 15px rgba(0,0,0,.10);
+
+  --space-1: 6px; --space-2: 8px; --space-3: 12px;
+  --space-4: 16px; --space-5: 20px; --space-6: 24px;
+}
+
+@media (max-width: 1024px){ .jobsTheme { --jobs-gap: 20px; } }
+@media (max-width: 640px){  .jobsTheme { --jobs-gap: 12px; } }
+
+/* EXAMPLE SELECTORS - REPLACE WITH ACTUAL */
+
+.jobsTheme .jlCard { content: 'example'; }
+.jobsTheme .jdContainer { content: 'example'; }
+.jobsTheme .btnPrimary { content: 'example'; }

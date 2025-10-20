@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Text, Float, DateTime, Date, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, Boolean, Date, DateTime, ForeignKey, Float, text
 from sqlalchemy.orm import relationship
-from datetime import datetime, date
+from sqlalchemy.dialects.postgresql import JSONB
 from .database import Base
 
 class User(Base):
@@ -8,67 +8,85 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    full_name = Column(String, nullable=True)
     is_admin = Column(Boolean, default=False, nullable=False)
-    cvs = relationship("CV", back_populates="owner")
-    applications = relationship("Application", back_populates="user")
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    date_of_birth = Column(Date, nullable=True)
+    account_type = Column(String, nullable=True)   # "candidate" | "company"
+    company_name = Column(String, nullable=True)
+    company_logo_url = Column(Text, nullable=True)
+    company_description = Column(Text, nullable=True)
+    sector = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True))
+
+    applications = relationship("Application", back_populates="user", cascade="all,delete")
+    cvs = relationship("CV", back_populates="user", cascade="all,delete")
 
 class Job(Base):
     __tablename__ = "jobs"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
-    description = Column(Text, nullable=False)
-    location = Column(String, nullable=True)
-    duration = Column(String, nullable=True)
-    requirements = Column(Text, nullable=True)  # JSON string or comma separated
+    title = Column(Text, nullable=False)
+
+    company_name = Column(Text, nullable=True)
+    company_logo_url = Column(Text, nullable=True)
+
+    location_city = Column(Text, nullable=True)
+    location_country = Column(Text, nullable=True)
+
+    # NEW: single string field
+    experience_min = Column(Text, nullable=True)
+
+    employment_type = Column(Text, nullable=True)
+    work_mode = Column(Text, nullable=True)
+
+    salary_min = Column(Integer, nullable=True)
+    salary_max = Column(Integer, nullable=True)
+    salary_currency = Column(Text, nullable=True)
+    salary_is_confidential = Column(Boolean, nullable=False, server_default="false")
+
+    education_level = Column(Text, nullable=True)
+
+    company_overview = Column(Text, nullable=True)
+    offer_description = Column(Text, nullable=True)
+    missions = Column(JSONB, nullable=False, server_default="[]")
+    profile_requirements = Column(Text, nullable=True)
+    skills = Column(JSONB, nullable=False, server_default="[]")
+
+    description = Column(Text, nullable=True)
     deadline = Column(Date, nullable=True)
-    contract_type = Column(String, nullable=True)  # New field
 
-    applications = relationship("Application", back_populates="job")
+    # status: draft | published | archived
+    status = Column(Text, nullable=False, server_default="published")
 
-class CV(Base):
-    __tablename__ = "cvs"
-    id = Column(Integer, primary_key=True, index=True)
-    file_path = Column(String, nullable=False)
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    posted_at = Column(DateTime(timezone=True), nullable=False)
+    updated_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True))
 
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    owner = relationship("User", back_populates="cvs")
+    owner_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    owner = relationship("User", foreign_keys=[owner_user_id])
+
+    applications = relationship("Application", back_populates="job", cascade="all,delete")
 
 class Application(Base):
     __tablename__ = "applications"
-
     id = Column(Integer, primary_key=True, index=True)
-    score = Column(Float, nullable=True)  # ML matching score (deprecated)
-    applied_at = Column(DateTime, default=datetime.utcnow)
-    status = Column(String, default='submitted')
-
-    # New application form fields
-    full_name = Column(String, nullable=True)
-    phone_number = Column(String, nullable=True)
-    education_level = Column(String, nullable=True)
-    years_experience = Column(Integer, nullable=True)
-    linkedin_url = Column(String, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
     cover_letter = Column(Text, nullable=True)
-
-    # Remove cv_id as we're not using CV matching anymore
-    user_id = Column(Integer, ForeignKey("users.id"))
-    job_id = Column(Integer, ForeignKey("jobs.id"))
+    cv_id = Column(Integer, ForeignKey("cvs.id"), nullable=False)
+    status = Column(String, nullable=False, default="pending")
+    score = Column(Float, nullable=True)
+    applied_at = Column(DateTime(timezone=True), server_default=text('now()'))
 
     user = relationship("User", back_populates="applications")
     job = relationship("Job", back_populates="applications")
 
-    __table_args__ = (
-        UniqueConstraint('user_id', 'job_id', name='unique_user_job_application'),
-        UniqueConstraint('job_id', 'phone_number', name='unique_job_phone_application'),
-        UniqueConstraint('job_id', 'linkedin_url', name='unique_job_linkedin_application'),
-        {'extend_existing': True}
-    )
-
-class MatchAnalysis(Base):
-    __tablename__ = "match_analyses"
+class CV(Base):
+    __tablename__ = "cvs"
     id = Column(Integer, primary_key=True, index=True)
-    keywords_matched = Column(Text, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    file_path = Column(String, nullable=False)
+    uploaded_at = Column(DateTime(timezone=True))
 
-    cv_id = Column(Integer, ForeignKey("cvs.id"))
-    job_id = Column(Integer, ForeignKey("jobs.id"))
+    user = relationship("User", back_populates="cvs")

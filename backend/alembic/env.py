@@ -24,11 +24,15 @@ config = context.config
 
 # Read DB URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Fallback to SQLite for development (same logic as database.py)
 if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL not set in environment or .env")
+    print("⚠️  No DATABASE_URL found for alembic, falling back to local SQLite database")
+    DATABASE_URL = "sqlite:///./dev.db"
 
 # Inject URL into alembic config (preferred way)
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
+print(f"🔄 Using database URL: {DATABASE_URL}")
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

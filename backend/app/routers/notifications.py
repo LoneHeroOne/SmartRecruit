@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import EmailStr
-from ..Services.email_service import send_status_email
+from ..services.email_service import send_status_email
 
 router = APIRouter()
 

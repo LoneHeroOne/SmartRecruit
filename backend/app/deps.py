@@ -1,5 +1,5 @@
 # app/deps.py
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from app.database import get_db
 from app import models
-from app.crud import get_user_by_email
+from .core.ratelimit import allow, remaining
 
 load_dotenv()
 
@@ -29,13 +29,14 @@ def get_current_user(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str | None = payload.get("sub")
-        if email is None:
+        sub = payload.get("sub")
+        if sub is None:
             raise credentials_exc
-    except JWTError:
+        user_id = int(sub)  # 👈 we store user.id in "sub"
+    except Exception:
         raise credentials_exc
 
-    user = get_user_by_email(db, email=email)
+    user = db.query(models.User).get(user_id)
     if user is None:
         raise credentials_exc
     return user
@@ -47,3 +48,18 @@ def require_admin(current_user: models.User = Depends(get_current_user)) -> mode
             detail="Admin privileges required",
         )
     return current_user
+
+def get_current_admin_user(current_user: models.User = Depends(get_current_user)) -> models.User:
+    """Same as require_admin but can be used in contexts that expect the user object"""
+    require_admin(current_user)  # This will raise an exception if not admin
+    return current_user
+
+def rate_limit(limit: int, window_sec: int, key_prefix: str):
+    async def _dep(request: Request):
+        ip = request.client.host if request.client else "unknown"
+        key = f"{key_prefix}:{ip}"
+        if not allow(key, limit, window_sec):
+            rem = remaining(key, limit, window_sec)
+            raise HTTPException(status_code=429, detail="Too Many Requests")
+        return True
+    return _dep

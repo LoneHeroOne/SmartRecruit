@@ -1,0 +1,128 @@
+/* SmartRecruit Navbar (scoped) */
+.sr-nav {
+  position: sticky; top: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 10px 16px; margin-bottom: 12px;
+
+  /* glassmorphic */
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+}
+
+.sr-nav__left { display: flex; align-items: center; gap: 14px; }
+.sr-nav__right { display: flex; align-items: center; gap: 10px; }
+
+.sr-nav .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+.sr-nav .brand img { width: 28px; height: 28px; border-radius: 6px; }
+.sr-nav .brand span { font-weight: 600; letter-spacing: .3px; }
+
+.sr-nav .links { display: inline-flex; align-items: center; }
+.sr-nav .links a {
+  margin-right: 14px; text-decoration: none; color: #cfd6e4;
+  padding: 6px 8px; border-radius: 8px; transition: background .15s ease, color .15s ease;
+}
+.sr-nav .links a.active, .sr-nav .links a:hover {
+  color: #fff; background: rgba(255,255,255,0.10);
+}
+
+.user-chip {
+  padding: 6px 10px; border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #e9eef8;
+}
+
+.btn-ghost {
+  appearance: none; background: transparent;
+  border: 1px solid rgba(255,255,255,0.16);
+  color: #e9eef8; padding: 6px 10px; border-radius: 8px; cursor: pointer;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.10); }
+
+/* --- Auth dropdown --- */
+.sr-nav__right { position: relative; }
+.auth-menu { position: relative; }
+
+.auth-trigger {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.16);
+  color: #e9eef8;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.auth-trigger:hover { background: rgba(255,255,255,0.10); }
+
+.auth-dropdown {
+  position: absolute; right: 0; top: 110%;
+  min-width: 240px;
+  background: rgba(12,14,22,0.9);
+  border: 1px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.auth-item {
+  display: block;
+  color: #e9eef8;
+  text-decoration: none;
+  padding: 10px 10px;
+  border-radius: 8px;
+}
+
+.auth-item:hover { background: rgba(255,255,255,0.08); }
+
+.auth-caption {
+  display: block;
+  color: #aeb7c8;
+  font-size: 12px;
+  margin-top: -4px;
+}
+
+/* Scoped styling only—no global index.css. */
+
+/* --- Auth dropdown v2 --- */
+.sr-nav__right { position: relative; }
+.auth-menu { position: relative; }
+.auth-trigger {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.16);
+  color: #e9eef8;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.auth-trigger:hover { background: rgba(255,255,255,0.10); }
+.auth-dropdown {
+  position: absolute; right: 0; top: 110%;
+  min-width: 240px;
+  background: rgba(12,14,22,0.9);
+  border: 1px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+.auth-item {
+  display: block;
+  color: #e9eef8;
+  text-decoration: none;
+  padding: 10px 10px;
+  border-radius: 8px;
+}
+.auth-item:hover { background: rgba(255,255,255,0.08); }
+.auth-caption { display: block; opacity: .7; font-size: 12px; margin-top: 4px; }
+
+.user-chip {
+  padding: 6px 10px; border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #e9eef8;
+}

@@ -1,0 +1,13 @@
+.infoBadge{
+  display:flex; align-items:center; gap: var(--space-2);
+  background:#f7f9fc; border:1px solid var(--color-border);
+  border-radius:12px; padding:10px;
+}
+.infoBadge__icon{
+  width:24px; height:24px; display:grid; place-items:center;
+  border-radius:8px; background:var(--color-chip); border:1px solid var(--color-chip-border);
+  font-size:.9rem;
+}
+.infoBadge__text{ min-width:0; }
+.infoBadge__label{ font-size:.78rem; color:#6b768a; margin-bottom:2px; }
+.infoBadge__value{ font-weight:600; color:var(--color-ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

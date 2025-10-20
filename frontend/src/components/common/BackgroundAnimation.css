@@ -1,14 +1,14 @@
 /* src/components/common/BackgroundAnimation.css */
-.lottie-bg {
-  position: fixed;          
+.bg-anim {
+  position: fixed;          /* cover the whole app */
   inset: 0;
-  z-index: 0;               /* keep it behind your cards/forms */
-  pointer-events: none;
+  z-index: -1;              /* behind everything */
+  pointer-events: none;     /* never block clicks */
   overflow: hidden;
 }
 
 /* Optional fallback background if JSON fails to load */
-.lottie-bg {
+.bg-anim {
   background: linear-gradient(135deg,
     var(--tt-blue, #0072bc),
     var(--tt-purple, #6a1b9a),
@@ -26,9 +26,10 @@
   100% { background-position: 0% 50%; }
 }
 
-/* Respect reduced motion: pause gradient animation too */
+/* Respect reduced motion: pause + soften animation */
 @media (prefers-reduced-motion: reduce) {
-  .lottie-bg {
+  .bg-anim {
     animation: none;
+    opacity: .4;
   }
 }

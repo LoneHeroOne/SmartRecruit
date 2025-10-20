@@ -4,9 +4,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 
-from app import models, auth
+from app import models
 from app.database import engine
-from app.routers import users, jobs, cvs, applications, notifications
+from app.config import settings
+from app.routers import auth, users, jobs, cvs, applications, admin_analytics, company_analytics, company
+from app.services.ai_service import ai_service, warmup as warmup_ai, compute_deterministic_score
+from .core.logging import setup_logging
 
 load_dotenv()
 
@@ -14,7 +17,23 @@ load_dotenv()
 if os.getenv("CREATE_TABLES", "false").lower() in {"1", "true", "yes"}:
     models.Base.metadata.create_all(bind=engine)
 
+setup_logging(debug=getattr(settings, "DEBUG", False))
+
 app = FastAPI(title="Job Matching API")
+
+@app.on_event("startup")
+def _warm_models():
+    try:
+        warmup_ai()
+    except Exception as e:
+        # don't block startup on warmup issues
+        import logging
+        logging.getLogger("smartrecruit").warning("warmup_failed", exc_info=e)
+
+if getattr(settings, "ENABLE_REQUEST_LOGS", True):
+    from .core.middleware import RequestIdMiddleware, AccessLogMiddleware
+    app.add_middleware(RequestIdMiddleware)
+    app.add_middleware(AccessLogMiddleware)
 
 # --- CORS ---
 default_origins = [
@@ -34,23 +53,72 @@ app.add_middleware(
 )
 
 # --- Routers ---
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(users.router, prefix="/users", tags=["users"])
-app.include_router(jobs.router, prefix="/jobs", tags=["jobs"])
-app.include_router(cvs.router, prefix="/cvs", tags=["cvs"])
-app.include_router(applications.router, prefix="/applications", tags=["applications"])
-app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+app.include_router(auth.router)
+app.include_router(users.router)
+app.include_router(jobs.router)
+app.include_router(cvs.router)
+app.include_router(applications.router)
+app.include_router(admin_analytics.router)
+app.include_router(company_analytics.router)
+app.include_router(company.router)
+
+# --- Static files ---
+import os
+from fastapi.staticfiles import StaticFiles
+if not os.path.exists("uploads"):
+    os.makedirs("uploads")
+if not os.path.exists("uploads/company_logos"):
+    os.makedirs("uploads/company_logos")
+app.mount("/static/company_logos", StaticFiles(directory="uploads/company_logos"), name="company_logos")
 
 # --- Simple health check ---
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
+# --- Detailed health check ---
+@app.get("/healthz")
+def healthz():
+    """Detailed health check with AI service status"""
+    ok = True
+    ai_ok = True
+    try:
+        # model load
+        from app.services.ai_service import get_bi_encoder
+        _ = get_bi_encoder()
+        # micro inference
+        _ = compute_deterministic_score("ping", "pong")
+    except Exception:
+        ai_ok = False
+        ok = False
+
+    return {
+        "status": "ok" if ok else "error",
+        "services": {
+            "database": "ok",  # Assume DB is ok if we get here
+            "ai_service": "ok" if ai_ok else "error"
+        },
+        "email_config_present": bool(getattr(settings, "SMTP_SERVER", None))
+    }
+
+# --- AI warmup endpoint ---
+@app.post("/ai/warmup")
+def warmup_ai():
+    """Warm up AI models by loading them into memory"""
+    try:
+        # Force loading of AI models
+        test_emb = ai_service.get_embedding("warmup test text")
+        print("AI models warmed up successfully")
+        return {"message": "AI models warmed up successfully"}
+    except Exception as e:
+        print(f"Failed to warm up AI models: {e}")
+        return {"error": f"Failed to warm up AI models: {str(e)}"}
+
 # --- Email test endpoint ---
 @app.post("/test-email")
 async def test_email():
     """Test email functionality with hardcoded values"""
-    from app.Services.email_service import send_status_email
+    from app.services.email_service import send_status_email
     try:
         await send_status_email(
             recipient="henrylone18@gmail.com",
